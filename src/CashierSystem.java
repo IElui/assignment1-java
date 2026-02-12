@@ -1,28 +1,43 @@
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 public class CashierSystem {
-    public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!");
+    public static void main(String[] args) {
+        CashierSystem cashierSystem = new CashierSystem();
+
+        List<Products> Customer1 = new ArrayList<>();
+        Customer1.add(new RegularProducts("Tin of cola", 8.0, 2));
+        Customer1.add(new Books("The Little Prince", 100.0, 1));
+        Customer1.add(new Clothes("Pair of socks", 30.0, 1, false));
+        Customer1.add(new Perishable("Fresh milk", 24.0, 1, LocalDate.of(2026, 2, 5), LocalDate.of(2026, 2, 13)));
+
+        double totalAmount = cashierSystem.calculateTotalAmount(Customer1);
+        System.out.println("Total amount: " + totalAmount + " hkd");
+
+        double refundAmount = cashierSystem.calculateRefundAmount(Customer1);
+        System.out.println("Refund amount: " + refundAmount + " hkd");
     }
-    public double calculateTotalPrice(Products[] products) {
-        double totalPrice = 0.0;
-        for (Products product : products) {
-            // Check the item is perishable and its expire date
-            if (Perishable.class.isInstance(product)) {
-                Perishable perishableProduct = (Perishable) product;
-                if (perishableProduct.getExpireDate() < 7) {
-                    System.out.println("Warning: " + perishableProduct.getName() + " is about to expire!");
-                }
-                
+
+    public double calculateTotalAmount(List<Products> orderItems) {
+        double totalAmount = 0.0;
+        for (Products product : orderItems) {
+            totalAmount += product.getCheckoutPrice() * product.getQuantity();
+        }
+        return totalAmount;
+    }
+
+    public double calculateRefundAmount(List<Products> orderItems) {
+        double refundAmount = 0.0;
+
+        for (Products product : orderItems) {
+            if (product.canRefund()) {
+                refundAmount += product.getCheckoutPrice() * product.getQuantity();
+            } else {
+                System.out.println(product.getRefundRejectedMessage());
             }
-            totalPrice += product.getPrice();
         }
-        return totalPrice;
-    }
-    public double calculateRefundAmount(Products product) {
-        if (product.isRefoundable()) {
-            return product.getPrice();
-        } else {
-            System.out.println("This product is not refundable.");
-            return 0.0;
-        }
+
+        return refundAmount;
     }
 }
